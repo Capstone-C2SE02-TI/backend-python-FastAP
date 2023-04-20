@@ -24,10 +24,13 @@ class copyTradingRequest(BaseModel):
 
 
 @router.post("/hash/")
-async def getTransaction(hash='3', mainnet=False):
+async def getTransaction(hash='3', chainId=5):
 
     # w3 = Web3(Web3.HTTPProvider(f'https://goerli.infura.io/v3/{infura_key}'))
-
+    response = {
+        'message' : None,
+        'response' : None
+    }
     txData = {
         "blockNumber": "17001424",
         "timeStamp": "1680929207",
@@ -58,7 +61,8 @@ async def getTransaction(hash='3', mainnet=False):
         ).call()
     
     if LPollAddress == '0x0000000000000000000000000000000000000000':
-        return
+        response['message'] = 'This pair didnt exist'
+        return response
 
     # Function selector : 0x7ff36ab5
     # Amount out min 000000000000000000000000000000000000000000000000000000013433ba5a
@@ -71,12 +75,15 @@ async def getTransaction(hash='3', mainnet=False):
     functionSelector = '0x7ff36ab5'
     amountOutMin = numToBytes(0)
     mystery = hexToBytes('80')
-    to = hexToBytes(txData['to'][2:])
-    deadline = numToBytes(getSecondUnix() + 100)  # Unix in second
+    to = hexToBytes('0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2'[2:])
+    deadline = numToBytes(getSecondUnix() + 10000)  # Unix in second
     pathLen = numToBytes(2)
-    path = [WETH_ADDRESS_GOERLI, txData['contractAddress']]
+    path = [hexToBytes(WETH_ADDRESS_GOERLI[2:]), hexToBytes('0x07865c6E87B9F70255377e024ace6630C1Eaa37F'[2:])]
+    print([functionSelector,amountOutMin,mystery,to,deadline,pathLen,path[0],path[1]])
 
-    return [functionSelector,amountOutMin,mystery,to,deadline,pathLen,path]
+    return ''.join([functionSelector,amountOutMin,mystery,to,deadline,pathLen,path[0],path[1]])
+
+    return '0xced03d77000000000000000000000000eff92a263d31888d860bd50809a8d171709b7b1c000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e47ff36ab5000000000000000000000000000000000000000000000002b5e3af16b1880000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000072598e10ef4c7c0e651f1ea3ceee74fcf0a76cf2000000000000000000000000000000000000000000000000000000006441492e0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000002c974b2d0ba1716e644c1fc59982a89ddd2ff72400000000000000000000000000000000000000000000000000000000'
     # Transfer to array and return it.
 
 
