@@ -14,7 +14,7 @@ router = APIRouter(
 # @router.get('/latest/{address}')
 
 @router.get('/token_trading')
-def tokenTrading(address: str = "0x5a52E96BAcdaBb82fd05763E25335261B270Efcb"):
+def tokenTrading(address: str = "0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2"):
     addresses = investorDocs.distinct('_id')
     if address not in addresses:
         return {
@@ -31,8 +31,8 @@ def tokenTrading(address: str = "0x5a52E96BAcdaBb82fd05763E25335261B270Efcb"):
 
 
 @router.post('/latest_tx/')
-def latestTransactions(address: str = Form("0x5a52E96BAcdaBb82fd05763E25335261B270Efcb"), 
-                       contract_address: str = Form("0xf57e7e7c23978c3caec3c3548e3d615c346e79ff"), 
+def latestTransactions(address: str = Form("0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2"), 
+                       contract_address: str = Form(""), 
                        pages: int = Form(1)):
 
     # address = "0x5a52E96BAcdaBb82fd05763E25335261B270Efcb"
@@ -51,12 +51,15 @@ def latestTransactions(address: str = Form("0x5a52E96BAcdaBb82fd05763E25335261B2
     response = investorDocs.find_one(filter=query, projection=projection)
     TXs = response['TXs']
 
-    filteredTXs = []
-    for tx in TXs:
-        if 'contractAddress' not in tx or tx['contractAddress'].lower() != contract_address.lower():    
-            continue
-        filteredTXs.append(tx)
+    print(contract_address, contract_address != '')
+    if contract_address != '':
+        filteredTXs = []
+        for tx in TXs:
+            if 'contractAddress' not in tx or tx['contractAddress'].lower() != contract_address.lower():    
+                continue
+            filteredTXs.append(tx)
 
-    response['TXs'] = filteredTXs
+        response['TXs'] = filteredTXs
+
     response['message'] = 'Successfully'
     return response
