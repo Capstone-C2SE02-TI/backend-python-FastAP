@@ -1,5 +1,10 @@
 "# backend-python-FastAP" 
 
+## 0. Create Virtual Environment
+python -m venv venv
+
+### Before Install Module and start Serve
+venv\Scripts\activate
 ## 1. Install dependent for project
 pip install -r requirements.txt
 
