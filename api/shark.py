@@ -1,5 +1,5 @@
 from api.mongoDB_init import crawlClient
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, Body
 from fastapi import FastAPI, Form
 
 
@@ -31,10 +31,11 @@ def tokenTrading(address: str = "0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2"):
 
 
 @router.post('/latest_tx/')
-def latestTransactions(address: str = Form("0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2"), 
+def latestTransactions(
+                       address: str = Form("0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2"), 
                        contract_address: str = Form(""), 
                        pages: int = Form(1)):
-
+    # print(payload)s
     # address = "0x5a52E96BAcdaBb82fd05763E25335261B270Efcb"
     # pages = 1
     txPerPages = 10

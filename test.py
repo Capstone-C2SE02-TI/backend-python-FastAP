@@ -1,20 +1,32 @@
-# I would like to send training daily report.
-# 1. Today's tasks
-# * Improving Deep Neural Networks: Hyperparameter Tuning, Regularization and Optimization:
-#     - W2 : Optimization Algorithms
-#     - W3 : Hyperparameter Tuning, Batch Normalization and Programming Frameworks
+import requests
 
-# * Research face-embedding source code:
-#     - Research about face identification
-#         ~ research about Arcface
- 
+body = {
+    'address' : 'a',
+    'contract_address' : '',
+    'pages' : 1
+}
 
-# 2. Tomorrow's tasks:
-# * Improving Deep Neural Networks: Hyperparameter Tuning, Regularization and Optimization:
-#     - W3 : Hyperparameter Tuning, Batch Normalization and Programming Frameworks
+import json
+body = json.load(body)
+# print(requests.post('http://127.0.0.1:8000/shark/latest_tx/', data=body).request.prepare_headers)
 
-# * Research face-embedding source code:
-#     - Research about face identification
-#         ~ research about Arcface
 
-# 3.Issues or Comment: None
+def pretty_print_POST(req):
+    """
+    At this point it is completely built and ready
+    to be fired; it is "prepared".
+
+    However pay attention at the formatting used in 
+    this function because it is programmed to be pretty 
+    printed and may differ from the actual request.
+    """
+    print('{}\n{}\r\n{}\r\n\r\n{}'.format(
+        '-----------START-----------',
+        req.method + ' ' + req.url,
+        '\r\n'.join('{}: {}'.format(k, v) for k, v in req.headers.items()),
+        req.body,
+    ))
+
+response = requests.post('http://127.0.0.1:8000/shark/latest_tx/', json=body)
+print(response.text)
+pretty_print_POST(response.request)

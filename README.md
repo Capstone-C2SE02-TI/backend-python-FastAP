@@ -5,7 +5,9 @@ python -m venv venv
 
 ### Before Install Module and start Serve
 venv\Scripts\activate
+
 ## 1. Install dependent for project
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 ## 2. Start server
