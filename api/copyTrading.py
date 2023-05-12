@@ -3,7 +3,7 @@ from api.mongoDB_init import crawlClient
 from fastapi import APIRouter, Form
 from fastapi import FastAPI
 from hexbytes import HexBytes
-from api.constant import WETH_ADDRESS_GOERLI
+from api.constant import WETH_ADDRESS_GOERLI, WETH_ADDRESS_BSC_TEST
 from api.util import numToBytes, hexToBytes, getSecondUnix, getRandomInfuraKey
 from api.web3Utils import getPancakeFactoryInstance, getWeb3Provider
 
@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.post("/hash/")
-async def getTransactionInput(buy_token_address : str = Form("0x07865c6e87b9f70255377e024ace6630c1eaa37f"),
+async def getTransactionInput(buy_token_address : str = Form("0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee"),
                          receiver : str = Form("0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2"),
                          chain_id : int = Form(5)):
 
@@ -27,17 +27,18 @@ async def getTransactionInput(buy_token_address : str = Form("0x07865c6e87b9f702
         'input' : None
     }
   
-    # pancakeFactory = getPancakeFactoryInstance()
-    # # return dir(pancakeFactory.functions)
-    # LPollAddress = pancakeFactory.functions.getPair(
-    #     web3.to_checksum_address(WETH_ADDRESS_GOERLI), 
-    #     web3.to_checksum_address(buy_token_address)
-    #     ).call()
+    pancakeFactory = getPancakeFactoryInstance()
+    # return dir(pancakeFactory.functions)
     
-    # if LPollAddress == '0x0000000000000000000000000000000000000000':
-    #     response['message'] = 'This pair didnt exist'
-    #     return response
-
+    LPollAddress = pancakeFactory.functions.getPair(
+        web3.to_checksum_address(WETH_ADDRESS_BSC_TEST), 
+        web3.to_checksum_address(buy_token_address)
+        ).call()
+    
+    if LPollAddress == '0x0000000000000000000000000000000000000000':
+        response['message'] = 'This pair didnt exist'
+        return response
+    print(LPollAddress)
     # Function selector : 0x7ff36ab5
     # Amount out min 000000000000000000000000000000000000000000000000000000013433ba5a
     # 0000000000000000000000000000000000000000000000000000000000000080
@@ -53,7 +54,7 @@ async def getTransactionInput(buy_token_address : str = Form("0x07865c6e87b9f702
     deadline = numToBytes(getSecondUnix() + 10000)  # Unix in second
     pathLen = numToBytes(2)
     # path = [hexToBytes(WETH_ADDRESS_GOERLI[2:]), hexToBytes('0x07865c6E87B9F70255377e024ace6630C1Eaa37F'[2:])]
-    path = [hexToBytes("0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"[2:]), hexToBytes('0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee'[2:])]
+    path = [hexToBytes(WETH_ADDRESS_BSC_TEST[2:]), hexToBytes(buy_token_address[2:])]
     print([functionSelector,amountOutMin,mystery,to,deadline,pathLen,path[0],path[1]])
 
     response['input'] = ''.join([functionSelector,amountOutMin,mystery,to,deadline,pathLen,path[0],path[1]])

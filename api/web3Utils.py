@@ -7,7 +7,7 @@ from web3 import Web3
 def getWeb3Provider():
 
     infuraKey = getRandomInfuraKey()
-    web3 = Web3(Web3.HTTPProvider(f'{INFURA_GOERLI_ENDPOINT}{infuraKey}'))
+    web3 = Web3(Web3.HTTPProvider("https://data-seed-prebsc-1-s2.binance.org:8545"))
 
     return web3
     
@@ -23,7 +23,7 @@ def getPancakeFactoryInstance() -> object:
 
     web3 = getWeb3Provider()
 
-    pancakeFactory = web3.eth.contract(address = CAKE_FACTORY_ADDRESS_GOERLI,abi = CAKE_FACTORY_ABI_GOERLI)
+    pancakeFactory = web3.eth.contract(address = "0x6725F303b657a9451d8BA641348b6761A6CC7a17",abi = CAKE_FACTORY_ABI_GOERLI)
 
     return pancakeFactory
 
