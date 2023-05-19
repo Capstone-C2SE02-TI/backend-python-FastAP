@@ -114,8 +114,13 @@ async def autoTrading(receiver: str = Form("0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd8
     web3.eth.default_account = account.address
     nonce = web3.eth.get_transaction_count(
         account.address)
+    print("nonce", nonce)
 
-    eth_amount = int(int(eth_amount) * 10**18)
+    print(eth_amount, eth_amount * 1000000000000000000,
+          int(eth_amount * 1000000000000000000))
+    eth_amount = int(eth_amount * 1000000000000000000)
+    print(eth_amount)
+    print('lmao')
     tx = middle.functions.copyTrading(receiver, dex_address, hexToBytes(input_data), eth_amount).build_transaction({
         'nonce': nonce,
         'gas': 200000,
@@ -123,9 +128,10 @@ async def autoTrading(receiver: str = Form("0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd8
         'gasPrice': 12345600000,
     })
 
-    # print(signed_txn)
+    print(tx)
     sended_tx = web3.eth.send_transaction(tx)
 
-    print(sended_tx)
+    # print(sended_tx)
 
+    return 0
     # print(sended_tx)
