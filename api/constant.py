@@ -11,5 +11,12 @@ with open('./contract-metadatas/cake.router.json') as cakeRouter:
     data = json.load(cakeRouter)
     CAKE_ROUTER_ADDRESS_GOERLI = data['CAKE_ROUTER_ADDRESS_GOERLI']
     CAKE_ROUTER_ABI_GOERLI = data['CAKE_ROUTER_ABI_GOERLI']
+    CAKE_ROUTER_ADDRESS_BSC_TEST = data['CAKE_ROUTER_ADDRESS_BSC_TEST']
+    CAKE_ROUTER_ABI_BSC_TEST = data['CAKE_ROUTER_ABI_BSC_TEST']
+
+with open('./contract-metadatas/middle.json') as cakeRouter:
+    data = json.load(cakeRouter)
+    MIDDLE_ADDRESS_BSC_TEST = data['MIDDLE_ADDRESS_BSC_TEST']
+    MIDDLE_ABI_BSC_TEST = data['MIDDLE_ABI_BSC_TEST']
 
 print('haha')
