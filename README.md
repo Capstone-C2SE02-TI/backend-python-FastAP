@@ -7,7 +7,9 @@ python -m venv venv
 venv\Scripts\activate
 
 ## 1. Install dependent for project
+### Upgrade pip
 python -m pip install --upgrade pip
+### Install dependent
 pip install -r requirements.txt
 
 ## 2. Start server
