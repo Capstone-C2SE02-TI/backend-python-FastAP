@@ -13,7 +13,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 ## 2. Start server
-uvicorn main:app --reload
+py .\main.py
 
 ## 3. Visit document
-http://127.0.0.1:8000/docs
+http://127.0.0.1:8080/docs
