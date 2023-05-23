@@ -103,9 +103,34 @@ class prediction_service:
     def get_predict(self, data_source):
 
         data_source = self.pre_process_data_source(data_source)
-        data_predict = self.process_data_source(data_source, self.models[0])
+        maxProfit = 0
+        best_data = None
+        for model in self.models:
+            data_predict = self.process_data_source(data_source, model)
 
-        return data_predict
+            trader = Trader(10000, 0.1)
+            print(data_predict['signal'].value_counts().to_dict())
+            for index, row in data_predict.iterrows():
+
+                rsignal = row['signal']
+                rprice = row['price']
+
+                latestPrice = rprice
+                if rsignal == 2:
+                    continue
+
+                if rsignal == 0:
+                    trader.buy(rprice)
+                else:
+                    trader.sell(rprice)
+
+            data = trader.calcResult(latestPrice)
+            print(data)
+            if maxProfit < data['profit']:
+                maxProfit = data['profit']
+                best_data = data_predict
+
+        return best_data
 
     def pre_process_data_source(self, data_source):
         timestamp = []

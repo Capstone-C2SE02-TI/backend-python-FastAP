@@ -63,6 +63,7 @@ def dateparse(time_in_secs):
 def create_target(ldf, tr_id=False, rows=1, priceChange=1):
     # calculate percent change over next 10 rows
     ldf['pct_change'] = ldf['price'].pct_change(rows).shift(-rows) * 100
+    
     ldf['signal'] = np.select(
         [ldf['pct_change'] > priceChange, ldf['pct_change'] < -priceChange],
         [0, 1],
