@@ -26,6 +26,9 @@ def predict_symbol(symbol: str):
     if 'symbol' not in coin:
         response['message'] = 'Symbol not found'
         return response
+    if 'prices' not in coin or 'daily' not in coin['prices']:
+        response['message'] = 'Symbol not found'
+        return response
 
     response['status'] = True
 

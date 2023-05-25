@@ -134,3 +134,8 @@ async def autoTrading(receiver: str = Form("0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd8
 
     return 0
     # print(sended_tx)
+
+
+if __name__ == "__main__":
+    print(getTradingInput("0x8d008B313C1d6C7fE2982F62d32Da7507cF43551",
+          "0x8d008B313C1d6C7fE2982F62d32Da7507cF43551"))
