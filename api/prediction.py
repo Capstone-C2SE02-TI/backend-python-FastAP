@@ -2,6 +2,7 @@ from fastapi import APIRouter, Form
 from fastapi import FastAPI
 from api.mongoDB_init import crawlClient
 from api.trading_services.predict import predict_service
+import matplotlib.pyplot as plt
 app = FastAPI()
 router = APIRouter(
     prefix='/prediction',
@@ -37,9 +38,11 @@ def predict_symbol(symbol: str):
 
     prediction = [{pred['timestamp']: {
         'price': pred['price'],
-        'signal': pred['signal']
+        'signal': pred['signal'],
+        'history': pred['history'],
+        'rawMoney': pred['rawMoney'],
     }} for pred in preds]
-
+    
     response['prediction'] = prediction
     response['symbol'] = coin['symbol']
     return response

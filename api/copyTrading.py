@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from api.mongoDB_init import crawlClient
+from api.mongoDB_init import crawlClient, main2Client
 from fastapi import APIRouter, Form
 from fastapi import FastAPI
 from hexbytes import HexBytes
@@ -20,6 +20,8 @@ load_dotenv()
 app = FastAPI()
 
 investorDocs = crawlClient['investors']
+userDocs = main2Client['users']
+
 router = APIRouter(
     prefix='/copyTrading',
 )
@@ -75,7 +77,9 @@ async def getTransactionInput(buy_token_address: str = Form("0xeD24FC36d5Ee211Ea
         'input': None
     }
     print('-'*70)
-    print("Get input for:", buy_token_address, receiver)
+
+    print("Get input for:", [WETH_ADDRESS_BSC_TEST,
+          buy_token_address], receiver)
     result, input = getTradingInput(buy_token_address, receiver)
 
     if result:
@@ -87,6 +91,7 @@ async def getTransactionInput(buy_token_address: str = Form("0xeD24FC36d5Ee211Ea
     return response
     return '0xced03d77000000000000000000000000eff92a263d31888d860bd50809a8d171709b7b1c000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e47ff36ab5000000000000000000000000000000000000000000000002b5e3af16b1880000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000072598e10ef4c7c0e651f1ea3ceee74fcf0a76cf2000000000000000000000000000000000000000000000000000000006441492e0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000002c974b2d0ba1716e644c1fc59982a89ddd2ff72400000000000000000000000000000000000000000000000000000000'
     # Transfer to array and return it.
+
 
 # web3 = Web3(Web3.HTTPProvider(
 #     "https://data-seed-prebsc-1-s2.binance.org:8545"))
@@ -119,21 +124,74 @@ async def autoTrading(receiver: str = Form("0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd8
         account.address)
 
     print("nonce", nonce)
-    eth_amount = int(eth_amount * 1000000000000000000)
-    tx = middle.functions.copyTrading(receiver, dex_address, hexToBytes(input_data), eth_amount).build_transaction({
-        'nonce': nonce,
-        'gas': 200000,
-        'from': account.address,
-        'gasPrice': 12345600000,
-    })
+    status = False
+    txHash = "0x"
 
-    print(tx)
-    sended_tx = web3.eth.send_transaction(tx)
+    response = {
+        "status": False,
+        "txHash": txHash
+    }
+    try:
+        eth_amount = int(eth_amount * 1000000000000000000)
+        tx = middle.functions.copyTrading(receiver, dex_address, hexToBytes(input_data), eth_amount).build_transaction({
+            'nonce': nonce,
+            'gas': 200000,
+            'from': account.address,
+            'gasPrice': 12345600000,
+        })
 
-    print(HexBytes(sended_tx))
+        print(tx)
+        sended_tx = web3.eth.send_transaction(tx)
+    except:
+        print("Error in", tx)
 
-    return 0
+        print("dex_address", dex_address)
+        print("input_data", input_data)
+        print("eth_amount", eth_amount)
+        print("receiver", receiver)
+
+        print("-"*50)
+        return response
+
+    response['status'] = True
+    response['txHash'] = HexBytes(sended_tx)
+    return response
+
     # print(sended_tx)
+
+
+@router.post("/txFail")
+async def autoTrading(sharkAddr: str = Form("0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee"),
+                      fromTokenAddr: str = Form(
+                          "0x72598E10eF4c7C0E651f1eA3CEEe74FCf0A76CF2"),
+                      toTokenAddr: str = Form("0x00"),
+                      ethAmount: float = Form(0.001)):
+
+    ans = userDocs.update_one(
+        {
+            "autoTrading": {
+                "$elemMatch": {
+                    "sharkAddress": sharkAddr,
+                    "fromToken": fromTokenAddr,
+                    "toToken": toTokenAddr,
+                    "ethAmount": ethAmount
+                }
+            }
+        },
+        {
+            "$set": {
+                "autoTrading.$[elem].status": True
+            }
+        },
+        array_filters=[
+            {
+                "elem.sharkAddress": sharkAddr,
+                "elem.fromToken": fromTokenAddr,
+                "elem.toToken": toTokenAddr,
+                "elem.ethAmount": ethAmount
+            }
+        ]
+    )
 
 
 if __name__ == "__main__":

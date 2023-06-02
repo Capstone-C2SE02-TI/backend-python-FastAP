@@ -43,32 +43,32 @@ class Trader:
         self.amount = 0
         self.buy_amount = buy_amount
         self.history = [0]
+        self.rawMoney = [0]
 
     def calcResult(self, price):
-
         before = self.baseMoney
-#         print("Asset peak:", max(self.history))
-        # print("Before", self.baseMoney)
-
         after = self.money + self.amount*price
-#         print("After", self.money + self.amount*price)
 
-#         print("profit ratio",100 - before / after * 100)
-
+        print( max(self.history), after / before * 100)
         return {
-            "asset": max(self.history),
-            # "Before": self.baseMoney,
+            "maxAsset": max(self.history),
+            "history": self.history[1:],
+            "rawMoney": self.rawMoney[1:],
             # "After" : self.money + self.amount*price,
-            "profit": 100 - before / after * 100
+            "profit": after / before * 100
         }
 
     def buy(self, price):
         if self.money < self.buy_amount * price:
+            self.history.append(self.money + self.amount*price)
+            self.rawMoney.append(self.money)
             return False
+        
         self.money -= self.buy_amount * price
         self.amount += self.buy_amount
 
         self.history.append(self.money + self.amount*price)
+        self.rawMoney.append(self.money)
 #         print("buy",self.money,self.amount)
         return True
 
@@ -76,14 +76,20 @@ class Trader:
 
         self.money += self.amount*price
         self.amount = 0
-
+        self.history.append(self.money + self.amount*price)
+        self.rawMoney.append(self.money)
         return True
+    
+    # def get_sell_amount(self):
+        
+    def stand(self, price):
+        self.history.append(self.money + self.amount*price)
+        self.rawMoney.append(self.money)
 
 
 class prediction_service:
     def __init__(self):
         self.models = self.config_models(modelDir)
-        print(self.models)
 
     def config_models(self, modelDir):
 
@@ -97,9 +103,48 @@ class prediction_service:
             with open(modelPath, 'rb') as f:
                 clf2 = pickle.load(f)
                 models.append(clf2)
+                print(clf2)
 
         return models
 
+    def plot_result(self, data_predict):
+        preds = data_predict.to_dict('records')
+        timestamps = []
+        prices = []
+        signals = []
+        histories = []
+        colors = []
+        rawMoneys = []
+        # Extract the timestamp, price, and signal values from the data
+        for item in preds:
+            timestamp = item['timestamp']
+            price = item["price"]
+            signal = item["signal"]
+            history = item["history"]
+            rawMoney = item["rawMoney"]
+            timestamps.append(int(timestamp))
+            prices.append(price)
+            signals.append(signal)
+            histories.append(history)
+            rawMoneys.append(rawMoney)
+            if signal == 0:
+                colors.append('green')
+            elif signal == 1:
+                colors.append('red')
+            else:
+                colors.append('none')
+
+        # Plotting the data
+        plt.figure(figsize=(15, 5))  # Set the figure size to make the plot bigger
+        plt.plot(timestamps, prices, color='blue', linewidth=0.2)
+        # plt.scatter(timestamps, signals, marker='o', color='red')
+        plt.plot(timestamps, histories, color='black', linewidth=0.25)
+        plt.plot(timestamps, rawMoneys, color='pink', linewidth=0.25)
+        plt.scatter(timestamps, prices, c=colors, cmap='cool', linewidths=0.2)
+        plt.xlabel('Timestamp')
+        plt.ylabel('Price')
+        plt.title('Bitcoin Price and Signals')
+        plt.show()
     def get_predict(self, data_source):
 
         data_source = self.pre_process_data_source(data_source)
@@ -108,15 +153,16 @@ class prediction_service:
         for model in self.models:
             data_predict = self.process_data_source(data_source, model)
 
-            trader = Trader(10000, 0.1)
+            trader = Trader(10000, 0.05)
             print(data_predict['signal'].value_counts().to_dict())
+            
             for index, row in data_predict.iterrows():
-
                 rsignal = row['signal']
                 rprice = row['price']
 
                 latestPrice = rprice
                 if rsignal == 2:
+                    trader.stand(rprice)
                     continue
 
                 if rsignal == 0:
@@ -125,25 +171,28 @@ class prediction_service:
                     trader.sell(rprice)
 
             data = trader.calcResult(latestPrice)
-            print(data)
+            data_predict['history'] = data['history']
+            data_predict['rawMoney'] = data['rawMoney']
+            
             if maxProfit < data['profit']:
                 maxProfit = data['profit']
                 best_data = data_predict
 
+            # self.plot_result(data_predict)
+            
+
         return best_data
 
     def pre_process_data_source(self, data_source):
-        timestamp = []
-        price = []
 
-        for t, p in data_source.items():
-            timestamp.append(int(t))
-            price.append(p)
+        sliceIndex = 0
+        timestamp = [int(t) for t in data_source.keys()][-sliceIndex:]
+        price = list(data_source.values())[-sliceIndex:]
 
-        df = pd.DataFrame(list(zip(timestamp, price)),
-                          columns=['timestamp', 'price'])
+        df = pd.DataFrame({'timestamp': timestamp, 'price': price})
 
         return df
+
 
     def process_data_source(self, data_source, model):
         df = process_test_data(data_source, model)

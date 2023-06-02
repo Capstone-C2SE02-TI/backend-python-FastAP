@@ -139,6 +139,7 @@ def process_data(data_source, createSignal=True, rows=1, priceChange=1):
     tech_indi(data_source, False)
     data_source = data_source.dropna()
 
+    # Already remove signal inside
     period_test_1_processed = dimRed(data_source,
                                      split_id=[0.2, None],
                                      model_id='fastica',

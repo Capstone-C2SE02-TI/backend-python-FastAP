@@ -1,7 +1,7 @@
 from api.mongoDB_init import crawlClient
 from fastapi import APIRouter, Request, Body
 from fastapi import FastAPI, Form
-from web3Utils import web3
+from api.web3Utils import web3
 
 app = FastAPI()
 
